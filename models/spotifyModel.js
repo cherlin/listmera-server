@@ -1,5 +1,5 @@
 const spotify = require('../secrets/spotifyConf.js');
-const { removeAdmin, findUser, registerModel, loginModel } = require('./userModel.js');
+const { removeAdmin, findUser, registerModel } = require('./userModel.js');
 const { setExpiry } = require('./playlistModel.js');
 
 async function getFeatures(tracks, refresh) {
@@ -166,14 +166,14 @@ async function getAuth(code) {
   await spotify.getMe()
     .then(async res => {
       const exist = await findUser(res.body.id);
-      if (exist.length > 0) flag = true;
+      if (exist) flag = true;
       if (res.body['images'][0]) newUser.picture = res.body['images'][0].url;
       else newUser.picture = undefined;
       newUser.email = res.body.email;
       newUser.username = res.body.id;
       newUser.name = res.body.display_name ? res.body.display_name : res.body.id;
     }).catch(e => console.error(e));
-  if (flag) return loginModel(newUser);
+  if (flag) return findUser(newUser);
   else {
     await spotify.getUserPlaylists(newUser.username, {limit: 50})
       .then(async res => {

@@ -32,7 +32,7 @@ module.exports = {
     const req = ctx.request.body;
     const parsed = engine.parse(req.values, req.tempo)
     const user = await findUser(req.username);
-    const trackList = engine.init(user[0].playlists);
+    const trackList = engine.init(user.playlists);
     const newPlaylist = await createPlaylist({
       admin : req.username,
       name : req.name,
@@ -54,29 +54,29 @@ module.exports = {
   },
   collab: async function (ctx) {
     const user = await findUser(ctx.request.body.username);
-    const tracks = engine.init(user[0].playlists);
+    const tracks = engine.init(user.playlists);
     const trackId = await createTrackList(tracks);
     const playlist = await retrieveTrackList(ctx.params.id);
-    ctx.status = await intersectTracks(playlist, trackId, user[0].username, user[0].refresh)
+    ctx.status = await intersectTracks(playlist, trackId, user.username, user.refresh)
       .catch(e => console.error(e));
   },
   generate: async function (ctx) {
     const user = await findUser(ctx.request.body.username);
     const playlist = await getPlaylistDetails(ctx.params.id);
     const copy = ctx.request.body.copy
-    if (user.length && user[0].username === playlist.adminId) {
-      await generatePlaylist(playlist, user[0].refresh, ctx.params.id)
+    if (user && user.username === playlist.adminId) {
+      await generatePlaylist(playlist, user.refresh, ctx.params.id)
       ctx.status = 201;
     } else if (!playlist.adminId) {
       ctx.status = 400;
     } else if (copy) {
-      await generatePlaylist(playlist, user[0].refresh, ctx.params.id, copy, user[0])
+      await generatePlaylist(playlist, user.refresh, ctx.params.id, copy, user)
     } else ctx.status = 401;
   },
   delete: async function (ctx) {
     const playlist = await getPlaylistDetails(ctx.params.id);
     const user = await findUser(ctx.request.body.username);
-    if (user.length && user[0].username === playlist.adminId) {
+    if (user && user.username === playlist.adminId) {
       await deletePlaylist({
         playlist: ctx.params.id,
         collabs: playlist.collabs,
@@ -84,7 +84,7 @@ module.exports = {
         tracks: playlist.trackId
       });
       ctx.status = await removeAdmin({
-        username: user[0].username,
+        username: user.username,
         id: ctx.params.id
       });
     } else if (!playlist.adminId) ctx.status = 400;

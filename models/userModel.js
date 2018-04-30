@@ -1,40 +1,13 @@
 const mongo = require('./mongo.js');
 
-function findTrack(identifier) {
-  return new Promise((resolve, reject) => {
-    mongo.then(db => {
-      db.collection('tracks')
-        .find({id: identifier})
-        .toArray((err, results) => {
-          resolve(results);
-          if (err) reject(err);
-      });
-    });
-  });
+async function findTrack(id) {
+  const db = await mongo;
+  return db.collection('tracks').findOne({id})
 }
 
-async function findUser(id) {
+async function findUser(username) {
   const db = await mongo;
-  return new Promise((resolve, reject) => {
-    db.collection('users')
-      .find({username: id})
-      .toArray((err, results) => {
-        resolve(results);
-        if (err) reject(err);
-      });;
-  });
-}
-
-async function loginModel(data) {
-  const db = await mongo;
-  return new Promise((resolve, reject) => {
-    db.collection('users')
-      .find({username: data.username})
-      .toArray((err, results) => {
-        resolve(results);
-        if (err) reject(err);
-      });;
-  });
+  return db.collection('users').findOne({username})
 }
 
 async function modifyUser(userId, object) {
@@ -71,13 +44,13 @@ function cleanDb(db) {
   });
 }
 
-async function registerModel(object) {
+async function registerModel(user) {
   const db = await mongo;
-  const simplePlaylists = await Promise.all(object.playlists.map(async playlist => {
+  const simplePlaylists = await Promise.all(user.playlists.map(async playlist => {
     if (playlist) {
       const tracks = await Promise.all(playlist.tracks.map(async song => {
         const exists = await findTrack(song.id);
-        if (!exists.length) {
+        if (!exists) {
           await db.collection('tracks').insertOne(song)
         }
         return song.id;
@@ -90,24 +63,24 @@ async function registerModel(object) {
   }));
   await cleanDb(db);
   await db.collection('users').insertOne({
-    username: object.username,
-    name: object.name,
-    email: object.email,
-    picture: object.picture,
+    username: user.username,
+    name: user.name,
+    email: user.email,
+    picture: user.picture,
     playlists: simplePlaylists,
-    refresh: object.refresh,
-    token: object.token,
+    refresh: user.refresh,
+    token: user.token,
     adminOf: [],
   });
-  return await loginModel(object);
+  return await findUser(user.username);
 }
 
-async function removeAdmin(object) {
+async function removeAdmin(user) {
   const db = await mongo;
-  const user = await findUser(object.username);
-  const lists = user[0].adminOf.filter(el => el !== object.id);
+  const user = await findUser(user.username);
+  const lists = user.adminOf.filter(el => el !== user.id);
   await db.collection('users').update(
-    { username: object.username },
+    { username: user.username },
     { $set: { adminOf: lists } });
   return 202;
 }
@@ -123,7 +96,6 @@ async function userPlaylistModel(object) {
 module.exports = { 
   findTrack,
   findUser,
-  loginModel,
   modifyUser,
   registerModel,
   removeAdmin,

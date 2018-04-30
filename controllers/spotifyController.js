@@ -14,10 +14,10 @@ module.exports = {
     const authCode = ctx.request.body.code;
     const user = await getAuth(authCode);
     ctx.response.body = {
-      name: user[0].name,
-      username: user[0].username,
-      picture: user[0].picture,
-      playlists: user[0].adminOf,
+      name: user.name,
+      username: user.username,
+      picture: user.picture,
+      playlists: user.adminOf,
     }
     ctx.status = 200;
   }

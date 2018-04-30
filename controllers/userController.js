@@ -5,12 +5,12 @@ const { getDisplayPlaylist } = require('../models/playlistModel.js');
 module.exports = {
   get: async function (ctx) {
     const user = await findUser(ctx.headers.user);
-    if (!user[0]) {
+    if (!user) {
       ctx.status = 401;
       return;
     } else {
-      user[0].adminOf = await Promise.all(user[0].adminOf.map(async el => await getDisplayPlaylist(el, true)));
-      ctx.response.body = user[0];
+      user.adminOf = await Promise.all(user.adminOf.map(async el => await getDisplayPlaylist(el, true)));
+      ctx.response.body = user;
       ctx.status = 200;
     }
   },

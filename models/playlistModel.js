@@ -49,7 +49,7 @@ async function getDisplayPlaylist(id, simple) {
       if (!details) resolve(null);
       playlist.adminId = details.admin;
       const user = await findUser(playlist.adminId);
-      playlist.admin = user[0].name;
+      playlist.admin = user.name;
       playlist.name = details.name;
       if (details.dance) playlist.dance = 'Dance';
       if (details.energy) playlist.energy = 'Energetic';
@@ -81,7 +81,7 @@ async function getDisplayPlaylist(id, simple) {
         client.smembers(`collabs:${details.collabs}`, async (err, users) => {
           if (err) reject(err);
           collabers = await Promise.all(users.map(async el => await findUser(el)));
-          playlist.collabers = collabers.map(el => el[0].name);
+          playlist.collabers = collabers.map(el => el.name);
           resolve(playlist);
         })
       })
@@ -97,7 +97,7 @@ async function getPlaylistDetails(id) {
       const user = await findUser(playlist.adminId);
       playlist.collabs = details.collabs;
       playlist.bank = details.bank;
-      playlist.admin = user[0].name;
+      playlist.admin = user.name;
       playlist.name = details.name;
       playlist.trackId = details.tracks;
       playlist.strict = Number(details.strict);
