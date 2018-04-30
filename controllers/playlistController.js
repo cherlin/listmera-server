@@ -29,7 +29,7 @@ const remove = require('../models/playlistModels/deletePlaylist.js');
 
 module.exports = {
   create: async function (ctx) {
-    const req = JSON.parse(ctx.request.body);
+    const req = ctx.request.body;
     const parsed = engine.parse(req.values, req.tempo)
     const user = await locate(req.username);
     const trackList = engine.init(user[0].playlists);
@@ -53,7 +53,7 @@ module.exports = {
     }
   },
   collab: async function (ctx) {
-    const user = await locate(JSON.parse(ctx.request.body).username);
+    const user = await locate(ctx.request.body.username);
     const tracks = engine.init(user[0].playlists);
     const trackId = await set(tracks);
     const playlist = await getTracks(ctx.params.id);
@@ -61,9 +61,9 @@ module.exports = {
       .catch(e => console.error(e));
   },
   generate: async function (ctx) {
-    const user = await locate(JSON.parse(ctx.request.body).username);
+    const user = await locate(ctx.request.body.username);
     const playlist = await get(ctx.params.id);
-    const copy = JSON.parse(ctx.request.body).copy
+    const copy = ctx.request.body.copy;
     if (user.length && user[0].username === playlist.adminId) {
       await generate(playlist, user[0].refresh, ctx.params.id)
       ctx.status = 201;
@@ -75,7 +75,7 @@ module.exports = {
   },
   delete: async function (ctx) {
     const playlist = await get(ctx.params.id);
-    const user = await locate(JSON.parse(ctx.request.body).username);
+    const user = await locate(ctx.request.body.username);
     if (user.length && user[0].username === playlist.adminId) {
       await remove({
         playlist: ctx.params.id,
