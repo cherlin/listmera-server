@@ -11,7 +11,7 @@ module.exports = {
     ctx.redirect(spotify.createAuthorizeURL(scopes, state))
   },
   register: async function (ctx) {
-    const authCode = JSON.parse(ctx.request.body).code;
+    const authCode = ctx.request.body.code;
     const user = await getAuth(authCode);
     ctx.response.body = {
       name: user[0].name,

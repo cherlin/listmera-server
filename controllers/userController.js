@@ -15,13 +15,13 @@ module.exports = {
     }
   },
   modify: async function (ctx) {
-    const object = JSON.parse(ctx.request.body);
+    const object = ctx.request.body;
     const username = object.username;
     delete object.username;
     ctx.status = await modifyUser(username, object);
   },
   refresh: async function (ctx) {
-    const object = JSON.parse(ctx.request.body);
+    const object = ctx.request.body;
     const username = object.username;
   }
 };
